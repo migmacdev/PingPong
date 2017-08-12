@@ -23,8 +23,58 @@ const  GLchar *fragmentShaderSource;
 
 GLFWwindow *window;
 
+SOCKET connections[2];
+int connectionCounter = 0;
 int x = 0;
 int prevx = 0;
+
+void clientHandlerThread(int index) {
+	char buffer[256];
+	while (true) {
+		recv(connections[index], buffer, sizeof(buffer), NULL);
+		std::cout << buffer << std::endl;
+		x++;
+	}
+}
+
+void handleNetwork() {
+	WSADATA wsaData;
+	WORD DllVersion = MAKEWORD(2, 1);
+
+	if (WSAStartup(DllVersion, &wsaData) != 0)
+	{
+		MessageBoxA(NULL, "Winsock startup failed", "Error", MB_OK | MB_ICONERROR);
+		exit(1);
+	}
+
+	SOCKADDR_IN addr; //Address that will bind our listening socket to
+	int addrlen = sizeof(addr);
+	addr.sin_addr.s_addr = inet_addr("127.0.0.1");	//Broadcast locally
+	addr.sin_port = htons(1111);	//Port
+	addr.sin_family = AF_INET; //IPV4 socket
+
+	SOCKET sListen = socket(AF_INET, SOCK_STREAM, NULL); //Create socket to listen for new connections
+	bind(sListen, (SOCKADDR*)&addr, sizeof(addr)); //Bind the address to the socket
+	listen(sListen, SOMAXCONN);	//pLACES sListen socket in a state in which is listening for an incoming connection, SOMAXCONN = Socket Outstanding
+
+	SOCKET newConnection;		//Socket to hold the client's connection
+
+	for (int i = 0; i < 2; i++) {
+		newConnection = accept(sListen, (SOCKADDR*)&addr, &addrlen);
+		if (newConnection == 0)		//If accepting the client's connection failed
+		{
+			std::cout << "Failed to accept the client's connection " << std::endl;
+		}
+		else {
+			std::cout << "Client connected! " << std::endl;
+			char MOTD[256] = "Hello";
+			send(newConnection, MOTD, sizeof(MOTD), NULL); //send MOTD to buffer
+			connections[i] = newConnection;
+			connectionCounter++;
+			CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)clientHandlerThread, (LPVOID)(i), NULL, NULL); //Create thread
+		}
+	}
+}
 
 void input() {
 	while (1) {
@@ -93,8 +143,6 @@ int initWindow() {
 
 
 
-
-
 int main() {
 
 	std::thread first(input);     // spawn new thread that calls foo()
@@ -103,36 +151,7 @@ int main() {
 		return EXIT_FAILURE;
 	}
 
-	WSADATA wsaData;
-	WORD DllVersion = MAKEWORD(2, 1);
-
-	if (WSAStartup(DllVersion, &wsaData) != 0)
-	{
-		MessageBoxA(NULL, "Winsock startup failed", "Error", MB_OK | MB_ICONERROR);
-		exit(1);
-	}
-
-	SOCKADDR_IN addr; //Address that will bind our listening socket to
-	int addrlen = sizeof(addr);
-	addr.sin_addr.s_addr = inet_addr("127.0.0.1");	//Broadcast locally
-	addr.sin_port = htons(1111);	//Port
-	addr.sin_family = AF_INET; //IPV4 socket
-
-	SOCKET sListen = socket(AF_INET, SOCK_STREAM, NULL); //Create socket to listen for new connections
-	bind(sListen, (SOCKADDR*) &addr, sizeof(addr)); //Bind the address to the socket
-	listen(sListen, SOMAXCONN);	//pLACES sListen socket in a state in which is listening for an incoming connection, SOMAXCONN = Socket Outstanding
-
-	SOCKET newConnection;		//Socket to hold the client's connection
-	newConnection = accept(sListen, (SOCKADDR*)&addr, &addrlen);
-	if (newConnection == 0)		//If accepting the client's connection failed
-	{
-		std::cout << "Failed to accept the client's connection " << std::endl;
-	}
-	else {
-		std::cout << "Client connected! " << std::endl;
-		char MOTD[256] = "Hello";
-		send(newConnection, MOTD, sizeof(MOTD), NULL); //send MOTD to buffer
-	}
+	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)handleNetwork, NULL, NULL, NULL); //Create thread
 
 	//Mesh setup
 	Shader ourShader("./core.vs", "./core.frag");
