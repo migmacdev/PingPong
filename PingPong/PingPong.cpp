@@ -13,9 +13,11 @@
 #include "Shader.h"
 #include <thread>
 #include <WinSock2.h>
+#include <string>
 
 //Window Dimensions
 const GLint WIDTH = 900, HEIGHT = 680;
+int padHeight = 10;
 
 const GLchar *vertexShaderSource;
 
@@ -27,15 +29,30 @@ SOCKET connections[2];
 int connectionCounter = 0;
 int x = 0;
 int prevx = 0;
+std::string ip;
 
-void clientHandlerThread(int index) {
-	char buffer[256];
-	while (true) {
-		recv(connections[index], buffer, sizeof(buffer), NULL);
-		std::cout << buffer << std::endl;
-		x++;
+void solveValue(int val) {
+	switch (val) {
+	case 1:
+		x += padHeight;
+		break;
+	case 0:
+		x -= padHeight;
+		break;
 	}
 }
+
+void clientHandlerThread(int index) {
+	char buffer[1];
+	while (true) {
+		recv(connections[index], buffer, 1, NULL);
+		int z = buffer[0];
+		std::cout << z << std::endl;
+		solveValue(z);
+	}
+}
+
+
 
 void handleNetwork() {
 	WSADATA wsaData;
@@ -49,8 +66,8 @@ void handleNetwork() {
 
 	SOCKADDR_IN addr; //Address that will bind our listening socket to
 	int addrlen = sizeof(addr);
-	addr.sin_addr.s_addr = inet_addr("127.0.0.1");	//Broadcast locally
-	addr.sin_port = htons(1111);	//Port
+	addr.sin_addr.s_addr = inet_addr(ip.c_str());	//Broadcast locally
+	addr.sin_port = htons(6590);	//Port
 	addr.sin_family = AF_INET; //IPV4 socket
 
 	SOCKET sListen = socket(AF_INET, SOCK_STREAM, NULL); //Create socket to listen for new connections
@@ -90,10 +107,10 @@ void input() {
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-		x++;
+		x += padHeight;
 	}
 	else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-		x--;
+		x -= padHeight;
 	}
 }
 
@@ -144,6 +161,9 @@ int initWindow() {
 
 
 int main() {
+
+	std::cout << "Ingresa la direccion IP de esta máquina en la red." << std::endl;
+	std::getline(std::cin, ip);
 
 	std::thread first(input);     // spawn new thread that calls foo()
 
