@@ -14,6 +14,7 @@
 #include <thread>
 #include <WinSock2.h>
 #include <string>
+#include "Player.h"
 
 //Window Dimensions
 const GLint WIDTH = 900, HEIGHT = 680;
@@ -28,8 +29,13 @@ GLFWwindow *window;
 SOCKET connections[2];
 int connectionCounter = 0;
 int x = 0;
+int posP2 = 0;
 int prevx = 0;
 std::string ip;
+
+
+Player p1;
+Player p2;
 
 void solveValue(int val) {
 	switch (val) {
@@ -93,24 +99,23 @@ void handleNetwork() {
 	}
 }
 
-void input() {
-	while (1) {
-		if (prevx != x) {
-			
-			//glm::mat4 transform;
-			//transform = glm::translate(transform, glm::vec3(0.1f, -0.5f, 0.0f));
-			//prevx = x;
-		}
-	}
-}
-
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-		x += padHeight;
+		//x += padHeight;
+		p1.move(0.5f);	
 	}
 	else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-		x -= padHeight;
+		//x -= padHeight;
+		p1.move(-0.5f);
+	}
+	if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+		//x += padHeight;
+		p2.move(0.5f);
+	}
+	else if (key == GLFW_KEY_K && action == GLFW_PRESS) {
+		//x -= padHeight;
+		p2.move(-0.5f);
 	}
 }
 
@@ -165,8 +170,6 @@ int main() {
 	std::cout << "Ingresa la direccion IP de esta máquina en la red." << std::endl;
 	std::getline(std::cin, ip);
 
-	std::thread first(input);     // spawn new thread that calls foo()
-
 	if (initWindow() == EXIT_FAILURE) {
 		return EXIT_FAILURE;
 	}
@@ -175,18 +178,28 @@ int main() {
 
 	//Mesh setup
 	Shader ourShader("./core.vs", "./core.frag");
+	p1 = Player(0);
+	p2 = Player(1);
 
 	//Triangle Vertices
 	GLfloat vertices[] = {
 		//Position				Colors				Texture Coordinates
-		-0.99f, -0.5f, 0.0f,	1.0f, 1.0f, 1.0f,	//Bottom left
-		-0.98f, -0.5f, 0.0f,	1.0f, 1.0f, 1.0f,	//Bottom Right
-		-0.99f, 0.0f, 0.0f,		1.0f, 1.0f, 1.0f,	//Top Left
-
-		-0.98f, -0.5f, 0.0f,	1.0f, 1.0f, 1.0f,	
-		-0.98f, 0.0f, 0.0f,		1.0f, 1.0f, 1.0f,	
-		-0.99f, 0.0f, 0.0f,		1.0f, 1.0f, 1.0f,		
+		-0.01f, -0.5f, 0.0f,	1.0f, 1.0f, 1.0f,	//Bottom left
+		0.01f, -0.5f, 0.0f,	1.0f, 1.0f, 1.0f,		//Bottom Right
+		-0.01f, 0.0f, 0.0f,		1.0f, 1.0f, 1.0f,	//Top Left
+		0.01f, 0.0f, 0.0f,		1.0f, 1.0f, 1.0f,	
 	};
+
+	unsigned int indices[] = {  // note that we start from 0!
+		0, 1, 2,   // first triangle
+		1, 2, 3    // second triangle
+	};
+
+	unsigned int EBO;
+	glGenBuffers(1, &EBO);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	//Vertex Buffer Object, Vertex Array Object
 	GLuint bufferId, vertexArrayId;
@@ -195,7 +208,6 @@ int main() {
 	glGenBuffers(1, &bufferId);
 	glBindBuffer(GL_ARRAY_BUFFER, bufferId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 
 	glGenVertexArrays(1, &vertexArrayId);
 	glBindVertexArray(vertexArrayId);
@@ -222,24 +234,18 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-
-		GLfloat FPS = 1 / ((GLfloat)glfwGetTime() - prev);
-		prev = (GLfloat)glfwGetTime();
-
-		//std::cout << glfwGetTime() * 0.1f << std::endl;
+		//GLfloat FPS = 1 / ((GLfloat)glfwGetTime() - prev);
+		//prev = (GLfloat)glfwGetTime();
 
 		//draw stuff
 		ourShader.Use();
-
-		//Translation using the x value
-		glm::mat4 transform;
-		transform = glm::translate(transform, glm::vec3(0.0f,0.05f * x,0.9f));
-
-		GLint transformLocation = glGetUniformLocation(ourShader.Program, "transform");
-		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
-
+		
 		glBindVertexArray(vertexArrayId);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		p1.render(ourShader, EBO);
+		p2.render(ourShader, EBO);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glBindVertexArray(0);
 
 		//Swap the screen buffers
@@ -249,130 +255,10 @@ int main() {
 	glDeleteVertexArrays(1, &vertexArrayId);
 	glDeleteBuffers(1, &bufferId);
 
-	first.join();                // pauses until first finishes
+
 	//Terminate GLFW, clearing any resources allocated by GLFW
 	glfwTerminate();
 
 	return EXIT_SUCCESS;
 
 }
-
-
-
-//#include <GL/freeglut.h>
-//#include <time.h>
-//#include <cmath>
-//#include "Player.h"
-//#include "Score.h"
-//#include "Ball.h"
-
-
-
-
-
-//
-//class Game {
-//public:
-//
-//	const int WINDOW_WIDTH = 1280;
-//	const int WINDOW_HEIGHT = 720;
-//	Player p1;
-//	Player p2;
-//	Score score;
-//	int playerSpeed;
-//	int ballSpeed;
-//
-//	void start_settings();
-//	void win();
-//	void DrawField();
-//	void DrawScore(); 
-//
-//	
-//} settings;
-//
-//void Game::start_settings() {
-//
-//}
-//void Game::win() {
-//
-//}
-//void Game::DrawField() {
-//
-//}
-//void Game::DrawScore() {
-//
-//}
-//
-//void keyboard(unsigned char key, int x, int y) {
-//	switch (key) {
-//	case 'q':
-//		cout << "Draw" << endl;
-//		//left.Up = true;
-//		break;
-//	case 'a':
-//		//left.Down = true;
-//		break;
-//	case 'z':
-//		//if (left.hold) {
-//		//	left.hold = false;
-//			//ball.vx = settings.BallSpeedX;
-//		//}
-//		break;
-//	case 'p':
-//		//right.Up = true;
-//		break;
-//	case 'l':
-//		//right.Down = true;
-//		break;
-//	case 'm':
-//		/*if (right.hold) {
-//			right.hold = false;
-//			//ball.vx = -settings.BallSpeedX;
-//			break;
-//		}*/
-//		break;
-//	}
-//}
-//
-//void keyboardUp(unsigned char key, int x, int y) {
-//	switch (key) {
-//	case 'q':
-//		//left.Up = false;
-//		break;
-//	case 'a':
-//		//left.Down = false;
-//		break;
-//	case 'p':
-//		//right.Up = false;
-//		break;
-//	case 'l':
-//		//right.Down = false;
-//		break;
-//	}
-//}
-//
-//
-//void Render() {
-//	/*glClear(GL_COLOR_BUFFER_BIT);
-//	glBegin(GL_QUADS);
-//	settings.DrawField();
-//	glEnd();
-//	settings.DrawScore();
-//	glutSwapBuffers();*/
-//}
-//
-//int main(int argc, char ** argv) {
-//	std::cout << "Hello" << std::endl;
-//	std::cin.get();
-//	/*glutInit(&argc, argv);
-//	glutInitDisplayMode(GLUT_SINGLE);
-//	glutInitWindowSize(settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT);
-//	glutInitWindowPosition(100, 100);
-//	glutCreateWindow("Ping Pong");
-//	glutDisplayFunc(Render);*/
-//	//glutKeyboardFunc(keyboard);
-//	//glutKeyboardUpFunc(keyboardUp);
-//	/*glClearColor(0, 0, 0, 1.0);
-//	glutMainLoop();*/
-//	return 0;
-//}
