@@ -33,17 +33,22 @@ int posP2 = 0;
 int prevx = 0;
 std::string ip;
 
-
 Player p1;
 Player p2;
 
 void solveValue(int val) {
 	switch (val) {
-	case 1:
-		x += padHeight;
-		break;
 	case 0:
-		x -= padHeight;
+		p1.move(-0.5f);
+		break;
+	case 1:
+		p1.move(0.5f);
+		break;
+	case 2:
+		p2.move(-0.5f);
+		break;
+	case 3:
+		p2.move(0.5f);
 		break;
 	}
 }
@@ -57,8 +62,6 @@ void clientHandlerThread(int index) {
 		solveValue(z);
 	}
 }
-
-
 
 void handleNetwork() {
 	WSADATA wsaData;

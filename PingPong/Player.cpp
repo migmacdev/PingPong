@@ -7,7 +7,7 @@
 #include <gtc\type_ptr.hpp> 
 
 Player::Player() {
-
+	this->id = -1;
 }
 Player::Player(int ID) {
 	this->id = ID;
@@ -22,6 +22,9 @@ void Player::move(float val) {
 	this->pos.y += val;
 }
 void Player::render(Shader ourS, unsigned int EBO) {
+	if (this->id == -1) {
+		return;
+	}
 	glm::mat4 model;
 	model = glm::translate(model, this->pos);
 	GLint transformLocation = glGetUniformLocation(ourS.Program, "transform");
