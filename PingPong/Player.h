@@ -9,7 +9,7 @@ public:
 	Player(int ID);
 	void move(float val);
 	void render(Shader ourS, unsigned int EBO);
+	glm::vec3 pos;
 private:
 	int id;
-	glm::vec3 pos;
 };

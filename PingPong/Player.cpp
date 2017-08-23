@@ -19,6 +19,12 @@ Player::Player(int ID) {
 	}
 }
 void Player::move(float val) {
+	std::cout << (this->pos.y + val) << std::endl;
+	//std::cout << val << std::endl;
+
+	if ((this->pos.y + val) < -0.5f || (this->pos.y + val) > 1.0f) {
+		return;
+	}
 	this->pos.y += val;
 }
 void Player::render(Shader ourS, unsigned int EBO) {
