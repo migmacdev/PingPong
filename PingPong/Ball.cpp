@@ -13,7 +13,6 @@ Ball::Ball() {
 }
 
 void Ball::move() {
-	std::cout << this->pos.x << std::endl;
 	this->pos.x += (directionX * (speed * Time::deltaTime));
 	this->pos.y += (directionY * (speed * Time::deltaTime));
 }
@@ -26,7 +25,6 @@ void Ball::collide(glm::vec3 p1Pos, glm::vec3 p2Pos) {
 	}
 	//Collide with players
 	if ((this->pos.x + sp) <= (p1Pos.x + Player::padWidth) ) {
-		std::cout <<  p1Pos.y << std::endl;
 		if (p1Pos.y >= this->pos.y && (p1Pos.y - 0.5f) <= this->pos.y) {
 			if ((this->pos.x + sp) > p1Pos.x ) {
 				this->directionX = directionX * (-1);

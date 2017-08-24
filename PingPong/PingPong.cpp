@@ -98,6 +98,9 @@ void handleNetwork() {
 
 	SOCKET newConnection;		//Socket to hold the client's connection
 
+	std::cout << "Puedes usar las letras : W, S para jugador 1 y I, K para jugador 2" << std::endl;
+	std::cout << "Lanzar la bola con la BARA_ESPACIADORA" << std::endl;
+
 	for (int i = 0; i < 2; i++) {
 		newConnection = accept(sListen, (SOCKADDR*)&addr, &addrlen);
 		if (newConnection == 0)		//If accepting the client's connection failed
