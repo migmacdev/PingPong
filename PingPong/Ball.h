@@ -11,10 +11,10 @@ public:
 	void collide(glm::vec3, glm::vec3);
 	float directionX = 0.0f;
 	float directionY = 0.0f;
-	float defaultDirX = 0.98f;
+	float defaultDirX = 1.0f;
 	float defaultDirY = 1.0f;
 private:
 
-	float speed = 0.015f;
+	float speed = 0.4f;
 	glm::vec3 pos;
 };

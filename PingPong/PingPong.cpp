@@ -14,6 +14,7 @@
 #include <thread>
 #include <WinSock2.h>
 #include <string>
+#include "Time.h"
 #include "Player.h"
 #include "Ball.h"
 
@@ -34,6 +35,7 @@ int x = 0;
 int posP2 = 0;
 int prevx = 0;
 std::string ip;
+
 
 Player p1;
 Player p2;
@@ -70,7 +72,6 @@ void clientHandlerThread(int index) {
 	while (true) {
 		recv(connections[index], buffer, 1, NULL);
 		int z = buffer[0];
-		std::cout << z << std::endl;
 		solveValue(z);
 	}
 }
@@ -132,7 +133,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		b.directionX = b.defaultDirX;
 		b.directionY = b.defaultDirY;
 	}
-	//std::cout << p2.pos.y << std::endl;
 }
 
 int initWindow() {
@@ -240,7 +240,6 @@ int main() {
 
 	GLfloat prev = 1;
 
-
 	//--------------------------------------------
 
 	GLfloat vBall[] = {
@@ -297,8 +296,10 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//GLfloat FPS = 1 / ((GLfloat)glfwGetTime() - prev);
-		//prev = (GLfloat)glfwGetTime();
+		GLfloat FPS = 1 / ((GLfloat)glfwGetTime() - prev);
+		Time::deltaTime = (GLfloat)glfwGetTime() - prev;
+
+		prev = (GLfloat)glfwGetTime();
 
 		//draw stuff
 		ourShader.Use();

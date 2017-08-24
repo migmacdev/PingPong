@@ -10,6 +10,7 @@ public:
 	void move(float val);
 	void render(Shader ourS, unsigned int EBO);
 	glm::vec3 pos;
+	static float padWidth ; 
 private:
 	int id;
 };

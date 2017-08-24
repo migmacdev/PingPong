@@ -12,16 +12,13 @@ Player::Player() {
 Player::Player(int ID) {
 	this->id = ID;
 	if (ID == 0) {
-		this->pos = glm::vec3(-0.99f, 0.0f, 0.0f);
+		this->pos = glm::vec3(-0.9f, 0.0f, 0.0f);
 	}
 	else {
-		this->pos = glm::vec3(0.99f, 0.0f, 0.0f);
+		this->pos = glm::vec3(0.9f, 0.0f, 0.0f);
 	}
 }
 void Player::move(float val) {
-	std::cout << (this->pos.y + val) << std::endl;
-	//std::cout << val << std::endl;
-
 	if ((this->pos.y + val) < -0.5f || (this->pos.y + val) > 1.0f) {
 		return;
 	}
@@ -38,3 +35,5 @@ void Player::render(Shader ourS, unsigned int EBO) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
+
+float Player::padWidth = 0.02f;
