@@ -56,12 +56,16 @@ void solveValue(int val) {
 		p2.move(movePlayer);
 		break;
 	case 4:
-		b.directionX = b.defaultDirX;
-		b.directionY = b.defaultDirY;
+		if (b.directionX == 0.0f) {
+			b.directionX = b.defaultDirX;
+			b.directionY = b.defaultDirY;
+		}
 		break;
 	case 5:
-		b.directionX = (-1.0f) * b.defaultDirX;
-		b.directionY = (-1.0f) * b.defaultDirY;
+		if (b.directionX == 0.0f) {
+			b.directionX = b.defaultDirX;
+			b.directionY = b.defaultDirY;
+		}
 		break;
 	}
 	
@@ -133,8 +137,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		p2.move(-(movePlayer));
 	}
 	else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-		b.directionX = b.defaultDirX;
-		b.directionY = b.defaultDirY;
+		if (b.directionX == 0.0f) {
+			b.directionX = b.defaultDirX;
+			b.directionY = b.defaultDirY;
+		}
 	}
 }
 
